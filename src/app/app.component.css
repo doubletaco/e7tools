@@ -1,0 +1,12 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: Noto Sans;
+}
+
+body {
+    display: flex;
+    align-content: stretch;
+    align-items: stretch;
+    height: 95vh;
+}

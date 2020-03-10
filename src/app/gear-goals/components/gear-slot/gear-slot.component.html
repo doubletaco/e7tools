@@ -1,0 +1,14 @@
+<div class="gear-slot">
+    <div class="gear-slot-icon">
+        <img class="gear-icon" src="assets/ui/equip-icons/{{slot}}.png" />
+    </div>
+    <div class="gear-slot-stat-select" >
+        <select id="gearslot_{{ slot }}" [disabled]="selectDisabled" [(ngModel)]="selectedMainStat" (change)="onStatChange()">
+            <option *ngFor="let stat of mainStats" [ngValue]="stat">{{ stat.name }}</option>
+        </select>
+    </div>
+    <div class="gear-slot-stat-value">
+        <input type="number" min="0" [(ngModel)]="statVal" (change)="onStatChange()"/>
+        <ng-container *ngIf="isPercentage(selectedMainStat.value)">%</ng-container>
+    </div>
+</div>

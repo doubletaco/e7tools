@@ -1,0 +1,136 @@
+<div class="gear-goals-body flex">
+    <div class="hero-column-wrapper">
+        <!--
+        <div class="geargoals-header">
+            <input class="text" placeholder="Search heroes..." />
+        </div>
+        -->
+
+        <div class="hero-info">
+            <span>
+                <img src="assets/ui/elements/{{ activeHero.element.id }}.png" /> <span class="hero-info-text">{{ activeHero.element.text }} </span>
+                <img src="assets/ui/classes/{{ activeHero.class.id }}.png" /> <span class="hero-info-text">{{ activeHero.class.text }} </span>
+                <img src="assets/ui/signs/{{ activeHero.sign.id }}.png" /> <span class="hero-info-text">{{ activeHero.sign.text }}</span>
+            </span>
+            <h1>{{ activeHero.name }} <img style="margin-bottom: 2px;" src="assets/ui/etc/{{ activeHero.rarity }}star.png" /></h1>
+        </div>
+        <div class="gear-goals-hero-panel layout-column-side">
+            <div class="flex-column flex">
+                <div class="max-level">
+                    <label>Lv. 
+                        <select id="levelselect" [(ngModel)]="maxLevel" (change)="initStats()" value="{{ maxLevel }}">
+                            <option *ngFor="let leveloption of activeHero.baseStats" value="{{ leveloption.level }}">{{ leveloption.level }}</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="geargoals-body flex-column">
+                    <div class="section-awakenings">
+                        <h2 class="hero-header">Awakening</h2>
+                        <table class="awakenings">
+                            <tr>
+                                <td>ⓧ</td>
+                                <td *ngFor="let starnum of [10, 20, 30, 40, 50, 60]">
+                                    <img *ngIf="maxAwakening < starnum" [ngClass]="{'disabled' : maxLevel < starnum}" class="awakening-star" src="assets/ui/etc/star.png" />
+                                    <img *ngIf="maxAwakening >= starnum" class="awakening-star" src="assets/ui/etc/star-awaken.png" />
+                                </td>
+                            </tr>
+                        </table>
+                        <input type="range" #ref name="awakenslider" [value]="awakenSliderValue" [(ngModel)]="awakenSliderValue" min="0" max="6" (change)="updateAwakening(ref.value)" />
+                    </div>
+                    <div>
+                        <table class="stat-table">
+                            <thead>
+                                <th></th>
+                                <th>Base</th>
+                                <th>Target</th>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let stat of baseStatsAtLevel.stats; let i = index;" >
+                                    <td class="stat-name">{{ stat.text }}</td>
+                                    <td class="stat-base-value">{{ formatStatText(stat) }}</td>
+                                    <td class="stat-target-value">
+                                        <input type="number" min="0" value="{{ targetStats.stats[i] }}" [(ngModel)]="targetStats.stats[i].value"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="multi-container flex">
+                        <div class="gear-dropdowns">
+                            <h2 class="hero-header">Gear Sets</h2>
+                            <div class="gear-set-select" *ngFor="let x of SELECT_GEARSETS; let i = index" (change)="onGearSetChange($event.target.value, i)" value="0">
+                                <select [(ngModel)]="selectedGearSets[i]" (ngClass)="{ 'no-set' : selectedGearSets[i] == 0 }">
+                                    <ng-container *ngFor="let set of gearSets">
+                                        <option value="{{ set.id }}" *ngIf="canDisplayOption(i, set)">{{ set.name }}</option>
+                                    </ng-container>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="calc-button">
+                        <button (click)="debugFunc()">Test Stuff</button>
+                        <button (click)="recalculateSubstats()">Calculate Gear Goal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-column-center flex"  [style.background-image]="'url(' + heroImage + ')'">
+        <div class="layout-column gear-slots-column flex left-20">
+            <app-gear-slot [slot]=1 (slotUpdate)="onSlotUpdate($event, 1)"></app-gear-slot>
+            <app-gear-slot [slot]=2 (slotUpdate)="onSlotUpdate($event, 2)"></app-gear-slot>
+            <app-gear-slot [slot]=3 (slotUpdate)="onSlotUpdate($event, 3)"></app-gear-slot>
+        </div>
+        <div class="gear-slots-column-hero flex">
+            <!-- <img src="assets/hero/{{ activeHero.id }}/model.png" /> -->
+        </div>
+        <div class="gear-slots-column flex right-20">
+            <app-gear-slot [slot]=4 (slotUpdate)="onSlotUpdate($event, 4)"></app-gear-slot>
+            <app-gear-slot [slot]=5 (slotUpdate)="onSlotUpdate($event, 5)"></app-gear-slot>
+            <app-gear-slot [slot]=6 (slotUpdate)="onSlotUpdate($event, 6)"></app-gear-slot>
+        </div>
+    </div>
+    <div class="layout-column-side flex-column gear-goals-results">
+        <h2 class="text-center">Gear Goals</h2>
+        <hr />
+        <div class="flex-1">
+            <h3 class="text-center">Total Substats Needed</h3>
+            <div class="container-center">
+                <ul class="substat-list">
+                <ng-container *ngFor="let subval of subStats">
+                    <li *ngIf="(subval) && (subval.value > 0)">{{ renderSubstat(subval) }}</li>
+                </ng-container>
+                </ul>
+            </div>
+        </div>
+        <div class="flex-1">
+            <h2 class="text-center">Analysis</h2>
+            <div *ngIf="subStats.length > 0">
+                <h3 class="text-center">Average Substat (Per Gear Slot)</h3>
+                <div class="container-center">
+                    <table class="slot-select">
+                        <thead>
+                            <tr>
+                                <th class="gear-analysis-stat table-header-row">Substat</th>
+                                <th class="table-header-row" colspan=6>Gear Slot</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngFor="let subval of subStats; let statindex = index">
+                                <tr *ngIf="(subval) && (subval.value > 0)">
+                                    <td class="gear-analysis-stat stat-analysis-icon stat-{{ subval.stat }} stat-cell">{{ getSubStatAnalysis(subval, statindex) }}{{ ((subval.stat == 4) ? '' : ' %')}} <span class="smalltext">/ slot</span></td>
+                                    <td *ngFor="let slot of [1, 2, 3, 4, 5, 6]; let slotindex = index">
+                                        <label class="substat-slot">
+                                                <input id="slot_{{ statindex }}_{{ slotindex }}" [disabled]="isSubstatAvailableForGearSlot(subval, slot)" class="substat-slot-checkbox" type="checkbox" [(ngModel)]="checkedGearSlots[statindex][slotindex]" />
+                                                <div class="substat-slot-check slot-{{ slot }}" *ngIf="(!(isSlotAtMaximumSubstats(slot) && (checkedGearSlots[statindex][slotindex] == false)) || (checkedGearSlots[statindex][slotindex] == true))"></div>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

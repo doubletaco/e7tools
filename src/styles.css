@@ -1,0 +1,29 @@
+/* Global Fonts */
+
+@import url('https://fonts.googleapis.com/css?family=Oswald:regular400=swap');
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans&display=swap');
+
+html {
+  height: 100%;  
+}
+
+/* You can add global styles to this file, and also import other style files */
+body {
+    background-color: black;
+    color: white;
+}
+
+app-root {
+  height: 100vh;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance:textfield;
+}
