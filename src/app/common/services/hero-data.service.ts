@@ -1,23 +1,81 @@
 import { Injectable } from '@angular/core';
-import { Hero, HeroStatValue } from '../cls/hero';
+import { Hero, IHeroStatValue } from '../cls/hero';
 import { Builder } from 'protractor';
 import { HttpClient } from '@angular/common/http';
 import { E7DB_API_ENDPOINTS } from 'src/app/gear-goals/defs';
+import { IHeroListItem } from '../interfaces/hero-list-item';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { IDictionary } from '../interfaces/dictionary';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HeroDataService {
 
+  // EpicSevenDB API mapping dictionaries
+  mapAttribute: IDictionary<number> = {
+    'fire': 1,
+    'ice': 2,
+    'wind': 3, // Earth
+    'light': 4,
+    'dark': 5
+  };
+
+  mapRole: IDictionary<number> = {
+    'warrior': 1,
+    'knight': 2,
+    'assassin': 3,
+    'ranger': 4,
+    'mage': 5,
+    'manauser': 6, // Soul Weaver.
+    'ingredient': 7 // Unused, but why not have it just in case
+  }
+
+  mapZodiac: IDictionary<number> = {
+    'waterbearer': 1,
+    'ram': 2, // Ares (Aries in game)
+    'scorpion': 3, // Scorpio
+    'archer': 4, // Saggitarius
+    'lion': 5, // Leo
+    'crab': 6, // Cancer
+    'fish': 7, // Pisces
+    'scales': 8, // Libra
+    'warrior': 9, // Virgo
+    'twins': 10, // Gemini
+    'goat': 11, // Capricorn
+    'bull': 12 // Taurus
+  }
+
   constructor(private http:HttpClient) { }
 
   // Gets the hero list to search against
-  GetHeroList() {
-    let ret = null;
-
-    ret = this.http.get(E7DB_API_ENDPOINTS.GET_HERO_LIST);
-
-    return ret;
+  GetHeroList():Observable<Array<IHeroListItem>> {
+    return this.http.get(E7DB_API_ENDPOINTS.GET_HERO_LIST)
+    .pipe(map(data => {
+      let ret: Array<IHeroListItem> = [];
+      let resNode = data['results'];
+      for (let i = 0; i < resNode.length; i++) {
+        let resItem = resNode[i];
+        let id = (resItem['id'] ? resItem['id'] : resItem['_id']) // E7DB doesn't return the internal ID (yet?)
+        let hli:IHeroListItem = {
+          id: id,
+          apiId: resItem['_id'],
+          name: resItem['name'],
+          rarity: resItem['rarity'],
+          class: this.mapRole[resItem['role']],
+          element: this.mapAttribute[resItem['attribute']],
+          sign: this.mapZodiac[resItem['zodiac']]
+        }
+        ret.push(hli);
+      }
+      ret.sort((a, b) => {
+        if (a.name < b.name) return -1;
+        else if (a.name > b.name) return 1;
+        else return 0;
+      });
+      return ret;
+    }));
   }
 
   // Gets full hero data including stats, skillups, and awakenings.
@@ -36,7 +94,7 @@ export class HeroDataService {
     res.rarity = obj['rarity'];
 
     for (let i = 0; i < obj['baseStats'].length; i++) {
-      let levelstats:Array<HeroStatValue> = [];
+      let levelstats:Array<IHeroStatValue> = [];
       for (let j = 0; j < obj['baseStats'][i]['stats'].length; j++) {
         levelstats.push({ 
           id: obj['baseStats'][i]['stats'][j]['id'],
@@ -59,7 +117,7 @@ export class HeroDataService {
   // Gets hero data with base stats and awakenings
   public GetHeroWithStats(id:String) {
     let jsonobj = {
-      id: "c1009",
+      id: "charlotte",
       name: "Charlotte",
       rarity: 5,
       element: 

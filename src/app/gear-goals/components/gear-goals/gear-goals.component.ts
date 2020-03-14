@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { HeroDataService } from 'src/app/common/services/hero-data.service';
-import { Hero, HeroStatValue, HeroStats, Awakening } from 'src/app/common/cls/hero';
-import { GearSetBonus } from '../../interfaces/gear-set-bonus';
+import { Hero, IHeroStatValue, IHeroStats, IAwakening } from 'src/app/common/cls/hero';
+import { IGearSetBonus } from '../../interfaces/gear-set-bonus';
 import { GearGoalsService } from '../../services/gear-goals.service';
 import { GEAR_SETS, STAT_MAP } from '../../defs';
-import { SubStat } from '../../interfaces/sub-stat';
+import { ISubStat } from '../../interfaces/sub-stat';
 import { GEAR_STATS } from 'src/defs.global';
-import { StatGain } from '../../interfaces/stat-gain';
+import { IStatGain } from '../../interfaces/stat-gain';
 import { stat } from 'fs';
+import { IHeroListItem } from 'src/app/common/interfaces/hero-list-item';
 
 @Component({
   selector: 'app-gear-goals',
@@ -17,14 +18,19 @@ import { stat } from 'fs';
 export class GearGoalsComponent implements OnInit {
 
   // Internal logic variables. These should probably be in a Service.
-  activeHero: Hero;
+  activeHero: Hero = null;
   heroId: String = '';
-  baseStatsAtLevel: HeroStats = null;
-  gearSets: Array<GearSetBonus> = [];
-  subStats: Array<SubStat> = [];
+  baseStatsAtLevel: IHeroStats = null;
+  gearSets: Array<IGearSetBonus> = [];
+  subStats: Array<ISubStat> = [];
   heroImage: String = "";
+  showSearch: boolean = true;
+  showResults: boolean = false;
   //-----------------------------------
-  hi = null;
+
+  // API Data properties
+  heroSearchList:Array<IHeroListItem> = [];
+  filteredHeroSearchList:Array<IHeroListItem> = [];
 
   // Page internal variables.
   maxGearSlots: number = 6;
@@ -39,32 +45,64 @@ export class GearGoalsComponent implements OnInit {
   searchText: String = '';
   maxLevel: number = 0;
   maxAwakening: number = 0;
-  targetStats: HeroStats = null;
-  gearSlots: Array<StatGain> = [];
+  targetStats: IHeroStats = null;
+  gearSlots: Array<IStatGain> = [];
   awakenSliderValue: number = 0;
   //-----------------------------------
 
   // Gear Analysis properties
   checkedGearSlots: boolean[][];
 
+  // test vars
+  testHS: IHeroListItem = {
+    id: 'charlotte',
+    apiId: 'charlotte',
+    name: 'Charlotte',
+    rarity: 5,
+    class: 2,
+    element: 1,
+    sign: 3
+  };
+
   constructor(private _heroDataService:HeroDataService, private _gearGoalsService:GearGoalsService) { }
 
   ngOnInit(): void {
+
+    // Get hero search list
+    // Check cache timestamp. The hero list doesnt't update often, so we don't need to fetch it often.
+    let now = new Date();
+    let cache = localStorage.getItem('hero-list-data-cache-ts');
+    // Hack since TypeScript won't let you let browsers handle storing Date objects in localstorage
+    if ((Date.parse(now.toString()) - Date.parse(cache)) > (60 * 6000)) {
+      // Fetch the data again if the cache has expired.
+      this._heroDataService.GetHeroList().subscribe((data) => {
+        console.log('fetching');
+        this.heroSearchList = data
+        let cacheTs = new Date();
+        localStorage.setItem('hero-list-data', JSON.stringify(data));
+        localStorage.setItem('hero-list-data-cache-ts', cacheTs.toString());
+      });
+    }
+    else { // Use our client-side cached hero list.
+      this.heroSearchList = JSON.parse(localStorage.getItem("hero-list-data"))
+      console.log('cached');
+    }
 
     // Get Gear Sets and init the gear set selection boxes to No Set
     this.gearSets = this._gearGoalsService.getAllSetBonuses();
     for (let i = 0; i < this.SELECT_GEARSETS.length; i++)
       this.selectedGearSets.push(0);
 
-    this.onSelectHero('');
+    // this.onSelectHero('');
   }
 
-  onSelectHero(search:String) {
-    search = 'c1009';
-    this.activeHero = this._heroDataService.GetHeroWithStats(search);
+  onSelectHero(data:IHeroListItem) {
+    this.showSearch = false;
+    this.searchText = data.name;
+    this.activeHero = this._heroDataService.GetHeroWithStats(data.apiId);
     this.maxLevel = this.activeHero.baseStats[0].level;
     this.initStats();
-    this.heroImage = 'assets/hero/' + search + '/model.png';
+    this.heroImage = 'assets/hero/' + this.activeHero.id + '/model.png';
     this.activeHero.name = 'Charlotte';
   }
 
@@ -137,7 +175,7 @@ export class GearGoalsComponent implements OnInit {
     this.initStats()
   }
 
-  formatStatText(stat:HeroStatValue) {
+  formatStatText(stat:IHeroStatValue) {
     if (stat.type == 1)
       return Math.floor(stat.value);
     if (stat.type == 2)
@@ -179,7 +217,7 @@ export class GearGoalsComponent implements OnInit {
       // Add any equipment values so we get the real stat gap
       let gearStatVal: number = 0;
       for (let k = 0; k < this.gearSlots.length; k++) {
-        let slot: StatGain = this.gearSlots[k];
+        let slot: IStatGain = this.gearSlots[k];
         if (slot == null || slot === undefined)
           continue;
         if (slot.stat == baseStat.id) {
@@ -231,7 +269,7 @@ export class GearGoalsComponent implements OnInit {
     }
   }
 
-  renderSubstat(sub:SubStat) {
+  renderSubstat(sub:ISubStat) {
     if (sub == null)
       return;
     
@@ -254,7 +292,7 @@ export class GearGoalsComponent implements OnInit {
     return ret;
   }
 
-  showAwakening(a:Awakening): boolean {
+  showAwakening(a:IAwakening): boolean {
     return a.level <= this.maxLevel;
   }
 
@@ -265,11 +303,10 @@ export class GearGoalsComponent implements OnInit {
   }
 
   debugFunc() {
-    debugger;
-    this._heroDataService.GetHeroList().subscribe(data => this.hi = data);
+    console.log('hi');
   }
 
-  getSubStatAnalysis(sub:SubStat, statindex:number) {
+  getSubStatAnalysis(sub:ISubStat, statindex:number) {
     let ret = 0;
     let numSlots = 0;
 
@@ -283,7 +320,7 @@ export class GearGoalsComponent implements OnInit {
     return ret;
   }
 
-  isSubstatAvailableForGearSlot(sub:StatGain, slot:number) {
+  isSubstatAvailableForGearSlot(sub:IStatGain, slot:number) {
     let ret = true;
 
     switch (slot) {
@@ -332,6 +369,35 @@ export class GearGoalsComponent implements OnInit {
     this.awakenSliderValue = ((value * 10) > this.maxLevel ? (this.maxLevel / 10) : value);
     this.maxAwakening = (this.awakenSliderValue * 10);
     this.initStats();
+  }
+
+
+  activateSearch() {
+    this.showSearch = true;
+    if (this.searchText != '' && this.searchText != null)
+      this.showResults = true;
+  }
+
+  filterHeroSearchResults() {
+    this.showResults = true;
+    if (this.searchText == '' || this.searchText == null)
+      this.filteredHeroSearchList = this.heroSearchList;  
+    else
+      this.filteredHeroSearchList =  this.heroSearchList.filter(itm => (itm.name.toLocaleLowerCase()).indexOf(this.searchText.toLowerCase()) > -1)
+  }
+
+  closeSearch() {
+    if (this.showSearch)
+      this.showSearch = false;
+  }
+
+  onClickSearchBox() {
+    if (this.searchText == '' || this.searchText == null)
+      this.showResults = true;
+  }
+
+  closeResults() {
+    this.showResults = false;
   }
 }
 

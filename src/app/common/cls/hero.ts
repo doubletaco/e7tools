@@ -1,32 +1,32 @@
 export class Hero {
     id: String = '';
     name: String = '';
-    element: IconInfo = null;
-    class: IconInfo = null;
-    sign: IconInfo = null;
+    element: IIconInfo = null;
+    class: IIconInfo = null;
+    sign: IIconInfo = null;
     rarity: number = 0;
-    baseStats: Array<HeroStats> = [];
-    awakenings: Array<Awakening> = [];
+    baseStats: Array<IHeroStats> = [];
+    awakenings: Array<IAwakening> = [];
 }
 
-interface IconInfo {
+interface IIconInfo {
     id: number;
     text: String;
 }
 
-export interface HeroStatValue {
+export interface IHeroStatValue {
     id: number;
     text: String;
     value: number;
     type: number;
 }
 
-export interface HeroStats {
+export interface IHeroStats {
     level: number;
-    stats: Array<HeroStatValue>;
+    stats: Array<IHeroStatValue>;
 }
 
-export interface Awakening {
+export interface IAwakening {
     level: number;
     stat: number;
     effect: number;

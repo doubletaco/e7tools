@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { GearSetBonus } from '../interfaces/gear-set-bonus';
+import { IGearSetBonus } from '../interfaces/gear-set-bonus';
 import { STAT_MAP, GEAR_SETS } from '../defs';
 import { getEnabledCategories } from 'trace_events';
-import { Hero, HeroStats } from 'src/app/common/cls/hero';
-import { SubStat } from '../interfaces/sub-stat';
-import { GearStat } from '../interfaces/gear-stat';
+import { Hero, IHeroStats } from 'src/app/common/cls/hero';
+import { ISubStat } from '../interfaces/sub-stat';
+import { IGearStat } from '../interfaces/gear-stat';
 import { GEAR_STATS } from 'src/defs.global';
 import { BrowserStack } from 'protractor/built/driverProviders';
 
@@ -15,14 +15,14 @@ export class GearGoalsService {
 
   activeHero: Hero;
   heroId: String = '';
-  baseStatsAtLevel: HeroStats = null;
-  gearSets: Array<GearSetBonus> = [];
-  subStats: Array<SubStat> = [];
+  baseStatsAtLevel: IHeroStats = null;
+  gearSets: Array<IGearSetBonus> = [];
+  subStats: Array<ISubStat> = [];
 
   constructor() { }
 
-  public getMainStatOptions(slot): Array<GearStat> {
-    let ret: Array<GearStat> = [];
+  public getMainStatOptions(slot): Array<IGearStat> {
+    let ret: Array<IGearStat> = [];
     /*
       Stat slots:
       1 - Weapon
@@ -156,8 +156,8 @@ export class GearGoalsService {
     return ret;
   }
 
-  public getAllSetBonuses(): Array<GearSetBonus> {
-    let res: Array<GearSetBonus> = [];
+  public getAllSetBonuses(): Array<IGearSetBonus> {
+    let res: Array<IGearSetBonus> = [];
 
     // Eventually I'll get these from the back-end so I can have translatable strings
 

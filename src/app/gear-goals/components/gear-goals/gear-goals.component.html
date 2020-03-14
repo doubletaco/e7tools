@@ -1,22 +1,22 @@
 <div class="gear-goals-body flex">
     <div class="hero-column-wrapper">
-        <!--
-        <div class="geargoals-header">
-            <input class="text" placeholder="Search heroes..." />
-        </div>
-        -->
-
         <div class="hero-info">
-            <span>
+            <span *ngIf="activeHero != null">
                 <img src="assets/ui/elements/{{ activeHero.element.id }}.png" /> <span class="hero-info-text">{{ activeHero.element.text }} </span>
                 <img src="assets/ui/classes/{{ activeHero.class.id }}.png" /> <span class="hero-info-text">{{ activeHero.class.text }} </span>
                 <img src="assets/ui/signs/{{ activeHero.sign.id }}.png" /> <span class="hero-info-text">{{ activeHero.sign.text }}</span>
             </span>
-            <h1>{{ activeHero.name }} <img style="margin-bottom: 2px;" src="assets/ui/etc/{{ activeHero.rarity }}star.png" /></h1>
+            <h1 *ngIf="activeHero != null && !showSearch" (click)="activateSearch()">{{ activeHero.name }} <img style="margin-bottom: 2px;" src="assets/ui/etc/{{ activeHero.rarity }}star.png" /></h1>
+            <input id="herosearchbox" *ngIf="showSearch" type="text" placeholder="Search for a hero" [(ngModel)]="searchText" (click)="onClickSearchBox()" (input)="filterHeroSearchResults()" />
+            <div clickAway [parentId]="'herosearch'" (onClickAway)="closeResults()" *ngIf="showSearch && showResults" class="search-results">
+                <ng-container *ngFor="let item of filteredHeroSearchList">
+                    <app-hero-search-item [hero]="item" (heroSelect)="onSelectHero($event)"></app-hero-search-item>
+                </ng-container>
+            </div>
         </div>
-        <div class="gear-goals-hero-panel layout-column-side">
+        <div *ngIf="activeHero != null" class="gear-goals-hero-panel layout-column-side">
             <div class="flex-column flex">
-                <div class="max-level">
+                <div class="max-level" (clickAway)="debugFunc()">
                     <label>Lv. 
                         <select id="levelselect" [(ngModel)]="maxLevel" (change)="initStats()" value="{{ maxLevel }}">
                             <option *ngFor="let leveloption of activeHero.baseStats" value="{{ leveloption.level }}">{{ leveloption.level }}</option>
@@ -25,7 +25,7 @@
                 </div>
                 <div class="geargoals-body flex-column">
                     <div class="section-awakenings">
-                        <h2 class="hero-header">Awakening</h2>
+                        <h2 class="hero-header">IAwakening</h2>
                         <table class="awakenings">
                             <tr>
                                 <td>ⓧ</td>
@@ -68,14 +68,13 @@
                         </div>
                     </div>
                     <div class="calc-button">
-                        <button (click)="debugFunc()">Test Stuff</button>
                         <button (click)="recalculateSubstats()">Calculate Gear Goal</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="layout-column-center flex"  [style.background-image]="'url(' + heroImage + ')'">
+    <div *ngIf="activeHero != null" class="layout-column-center flex"  [style.background-image]="'url(' + heroImage + ')'">
         <div class="layout-column gear-slots-column flex left-20">
             <app-gear-slot [slot]=1 (slotUpdate)="onSlotUpdate($event, 1)"></app-gear-slot>
             <app-gear-slot [slot]=2 (slotUpdate)="onSlotUpdate($event, 2)"></app-gear-slot>
@@ -90,7 +89,7 @@
             <app-gear-slot [slot]=6 (slotUpdate)="onSlotUpdate($event, 6)"></app-gear-slot>
         </div>
     </div>
-    <div class="layout-column-side flex-column gear-goals-results">
+    <div *ngIf="activeHero != null" class="layout-column-side flex-column gear-goals-results">
         <h2 class="text-center">Gear Goals</h2>
         <hr />
         <div class="flex-1">

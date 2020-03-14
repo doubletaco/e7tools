@@ -1,10 +1,10 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { GearGoalsService } from '../../services/gear-goals.service';
-import { GearStat } from '../../interfaces/gear-stat';
-import { SubStat } from '../../interfaces/sub-stat';
+import { IGearStat } from '../../interfaces/gear-stat';
+import { ISubStat } from '../../interfaces/sub-stat';
 import { GEAR_STATS } from 'src/defs.global';
 import { GEAR_SETS } from '../../defs';
-import { StatGain } from '../../interfaces/stat-gain';
+import { IStatGain } from '../../interfaces/stat-gain';
 
 
 @Component({
@@ -16,8 +16,8 @@ export class GearSlotComponent implements OnInit {
 
   @Input() slot: number = 0;
   statVal: number = 0;
-  mainStats: Array<GearStat> = [];
-  selectedMainStat: GearStat = null;
+  mainStats: Array<IGearStat> = [];
+  selectedMainStat: IGearStat = null;
   selectDisabled: boolean = true;
 
   // Ouptut properties
@@ -81,7 +81,7 @@ export class GearSlotComponent implements OnInit {
       gainType = 1;
     else gainType = 2;
 
-    let statGain:StatGain = {
+    let statGain:IStatGain = {
       stat: realStat,
       gain: this.statVal,
       type: gainType

@@ -1,8 +1,8 @@
-import { StatGain } from './stat-gain';
+import { IStatGain } from './stat-gain';
 
-export interface GearSetBonus {
+export interface IGearSetBonus {
     id: number;
     name: String;
     slots: number; // 2 or 4
-    bonus: StatGain;
+    bonus: IStatGain;
 }

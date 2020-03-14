@@ -85,6 +85,24 @@ div.hero-info h1 {
     margin-bottom: 0px;
 }
 
+div.hero-info input[type="text"] {
+    width: 100%;
+    font-family: Oswald;
+    font-size: 3.5rem;
+    font-weight: 700;
+    overflow: visible;;
+    margin-top: -10px;
+    margin-bottom: 0px;
+    outline: none;
+    border: none;
+    border-bottom: 1px solid #56442D;
+}
+
+div.hero-info input[type="text"]:focus {
+    outline: none;
+    border-bottom: 1px solid #9E7C53;
+}
+
 div.hero-info span {
 }
 
@@ -168,6 +186,18 @@ option {
 
 td.stat-target-value input {
     width: 50px;
+}
+
+/* Search Styling */
+div.search-results {
+    position: relative;
+    overflow-y: auto;
+    max-height: 178px;
+    border: 1px solid #9E7C53;
+}
+
+::-webkit-scrollbar {
+
 }
 
 /* Max Level styling */
