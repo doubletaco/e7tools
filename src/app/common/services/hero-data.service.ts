@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Hero, IHeroStatValue } from '../cls/hero';
+import { Hero, IHeroStatValue, IHeroStats } from '../cls/hero';
 import { Builder } from 'protractor';
 import { HttpClient } from '@angular/common/http';
-import { E7DB_API_ENDPOINTS } from 'src/app/gear-goals/defs';
+import { E7DB_API_ENDPOINTS, STAT_MAP } from 'src/app/gear-goals/defs';
 import { IHeroListItem } from '../interfaces/hero-list-item';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -47,6 +47,33 @@ export class HeroDataService {
     'bull': 12 // Taurus
   }
 
+  v1_mapZodiac: IDictionary<number> = {
+    'aquarius': 1,
+    'aries': 2, // Ares (Aries in game)
+    'scorpio': 3, // Scorpio
+    'sagittarius': 4, // Saggitarius
+    'leo': 5, // Leo
+    'cancer': 6, // Cancer
+    'pisces': 7, // Pisces
+    'libra': 8, // Libra
+    'virgo': 9, // Virgo
+    'gemini': 10, // Gemini
+    'capricorn': 11, // Capricorn
+    'taurus': 12 // Taurus
+  }
+
+  v1_mapStats:IDictionary<{ id:number, text:string }> = {
+    'atk': { id: STAT_MAP.ATTACK, text: 'Attack' },
+    'hp': { id:STAT_MAP.HEALTH, text: 'Health' },
+    'spd': { id: STAT_MAP.SPEED, text: 'Speed' },
+    'def': { id: STAT_MAP.DEFENSE, text: 'Defnse' },
+    'chc': { id: STAT_MAP.CRITRATE, text: 'Critical Hit Chance' },
+    'chd': { id: STAT_MAP.CRITDMG, text: 'Critical Hit Damage' },
+    'eff': { id: STAT_MAP.EFFECTIVENESS, text: 'Effectiveness' },
+    'efr': { id: STAT_MAP.EFFRES, text: 'Effect Resistance' },
+    'dac': { id: STAT_MAP.DUALATTACK, text: 'Dual Attack Chance' }
+  }
+
   constructor(private http:HttpClient) { }
 
   // Gets the hero list to search against
@@ -83,6 +110,90 @@ export class HeroDataService {
     throw "Not Implemented"
   }
 
+  v1BuildHeroObject(obj:Object) {
+    let ret:Hero = new Hero();
+
+    ret.id = obj['_id'];
+    ret.gameId = obj['gameId'];
+    ret.name = obj['name'];
+    ret.class = { id: this.mapRole[obj['classType']], text: obj['classType'] };
+    ret.element = { id: this.mapAttribute[obj['element']], text: obj['element'] };
+    ret.sign = { id: this.mapZodiac[obj['zodiac']], text: obj['zodiac'] }
+    ret.rarity = obj['rarity'];
+
+    // Stat Mapping
+    {
+      // The API returns fully awakened stats, but since we calculate that here, there's no need to keep that data
+      let baseStatsKeys:Array<String> = [
+        'lv30ThreeStarNoAwaken',
+        'lv40FourStarNoAwaken',
+        'lv50FiveStarNoAwaken',
+        'lv60SixStarNoAwaken'
+      ];
+      let flatstats:Array<number> = [STAT_MAP.ATTACK, STAT_MAP.DEFENSE, STAT_MAP.HEALTH, STAT_MAP.SPEED];
+      let statsNode = obj['stats'];
+      for (let i = 0; i < baseStatsKeys.length; i++) {
+        let itm = statsNode[baseStatsKeys[i]];
+        if (itm == null) continue; // Skip stat sets that don't exist (e.g. 3 star stats for a nat 5)
+        let lvl:number;
+        switch(i) {
+          case 0: lvl = 30; break;
+          case 1: lvl = 40; break;
+          case 2: lvl = 50; break;
+          case 3: lvl = 60; break;
+          default: return null; // Shouldn't ever happen
+        }
+        let lvlStats:Array<IHeroStatValue> = [];
+        for (let key in itm) {
+          if (true) {
+            if (key == 'cp') continue // Don't care about this stat
+
+            lvlStats.push({
+              id: this.v1_mapStats[key].id,
+              text: this.v1_mapStats[key].text,
+              value: ((itm[key] < 2 && itm[key] > 0) ? (itm[key] * 100) : itm[key]),
+              type: ((flatstats.indexOf(this.v1_mapStats[key].id) > -1) ? 1 : 2)
+            });
+          }
+        }
+        // My IDs are the order in which they're displayed on the hero box screen
+        lvlStats.sort((a, b) => {
+          if (a.id < b.id) return -1;
+          else if (b.id < a.id) return 1;
+          else return 0;
+        });
+
+        ret.baseStats.push({
+          level: lvl,
+          stats: lvlStats
+        });
+        // outside key loop
+      }
+    }
+
+    // Awakenings
+    {
+      let awakeningNode = obj['awakening'];
+      for (let i = 0; i < awakeningNode.length; i++) {
+        let statId:number = 0;
+        let statValue:number = 0;
+        for (let j = 0; j < awakeningNode[i]['statsIncrease'].length; j++) {
+          for (let key in awakeningNode[i]['statsIncrease'][j]) {
+            if (awakeningNode[i]['statsIncrease'][j][key] >= 20) continue;
+            statId = this.v1_mapStats[key].id;
+            statValue = ((awakeningNode[i]['statsIncrease'][j][key] < 1 && awakeningNode[i]['statsIncrease'][j][key] > 0) ? awakeningNode[i]['statsIncrease'][j][key] * 100 : awakeningNode[i]['statsIncrease'][j][key]);
+          }
+        }
+        ret.awakenings.push({
+          level: (awakeningNode[i]['rank'] * 10),
+          stat: statId,
+          effect: statValue
+        })
+      }
+      return ret;
+    }
+  }
+
   buildHeroObject(obj:Object) {
     let res:Hero = new Hero();
 
@@ -115,173 +226,12 @@ export class HeroDataService {
   }
 
   // Gets hero data with base stats and awakenings
-  public GetHeroWithStats(id:String) {
-    let jsonobj = {
-      id: "charlotte",
-      name: "Charlotte",
-      rarity: 5,
-      element: 
-      {
-        id: 1,
-        text: "Fire",
-      },
-      class:
-      {
-        id: 2,
-        text: "Knight",
-      },
-      sign:
-      {
-        id: 1, // Leo
-        text: "Leo",
-      },
-      baseStats:
-      [
-        {
-          level: 50,
-          stats:
-          [
-            {
-              id: 1,
-              text: "Attack",
-              value: 669,
-              type: 1
-            },
-            {
-              id: 2,
-              text: "Defense",
-              value: 534,
-              type: 1
-            },
-            {
-              id: 3,
-              text: "Health",
-              value: 4299,
-              type: 1
-            },
-            {
-              id: 4,
-              text: "Speed",
-              value: 99,
-              type: 1
-            },
-            {
-              id: 5,
-              text: "Critical Hit Chance",
-              value: 15,
-              type: 2
-            },
-            {
-              id: 6,
-              text: "Critical Hit Damage",
-              value: 150,
-              type: 2
-            },
-            {
-              id: 7,
-              text: "Effectiveness",
-              value: 0,
-              type: 2
-            },
-            {
-              id: 8,
-              text: "Effect Resistance",
-              value: 0,
-              type: 2
-            }
-          ]
-        },
-        {
-          level: 60,
-          stats:
-          [
-            {
-              id: 1,
-              text: "Attack",
-              value: 834,
-              type: 1
-            },
-            {
-              id: 2,
-              text: "Defense",
-              value: 662,
-              type: 1
-            },
-            {
-              id: 3,
-              text: "Health",
-              value: 5405,
-              type: 1
-            },
-            {
-              id: 4,
-              text: "Speed",
-              value: 99,
-              type: 1
-            },
-            {
-              id: 5,
-              text: "Critical Hit Chance",
-              value: 15,
-              type: 2
-            },
-            {
-              id: 6,
-              text: "Critical Hit Damage",
-              value: 150,
-              type: 2
-            },
-            {
-              id: 7,
-              text: "Effectiveness",
-              value: 0,
-              type: 2
-            },
-            {
-              id: 8,
-              text: "Effect Resistance",
-              value: 0,
-              type: 2
-            }
-          ]
-        }
-      ],
-      awakenings:
-      [
-        {
-          level: 10,
-          stat: 1, 
-          effect: 3
-        },
-        {
-          level: 20,
-          stat: 1, 
-          effect: 3
-        },
-        {
-          level: 30
-        },
-        {
-          level: 40,
-          stat: 5, 
-          effect: 8
-        },
-        {
-          level: 50,
-          stat: 1, 
-          effect: 6
-        },
-        {
-          level: 60,
-          stat: 1, 
-          effect: 6
-        }
-      ]
-    };
-
-    let ret = this.buildHeroObject(jsonobj);
-
-    return ret;
+  public GetHeroWithStats(id:String):Observable<Hero> {
+    return this.http.get(E7DB_API_ENDPOINTS.V1_GET_HERO_DATA + id).pipe(
+      map(data => {
+        return this.v1BuildHeroObject(data['results'][0]);
+      })
+    )
   }
 
   // Gets basic hero data (name, model, icon, class, element, zodiac)

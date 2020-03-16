@@ -7,7 +7,7 @@
                 <img src="assets/ui/signs/{{ activeHero.sign.id }}.png" /> <span class="hero-info-text">{{ activeHero.sign.text }}</span>
             </span>
             <h1 *ngIf="activeHero != null && !showSearch" (click)="activateSearch()">{{ activeHero.name }} <img style="margin-bottom: 2px;" src="assets/ui/etc/{{ activeHero.rarity }}star.png" /></h1>
-            <input id="herosearchbox" *ngIf="showSearch" type="text" placeholder="Search for a hero" [(ngModel)]="searchText" (click)="onClickSearchBox()" (input)="filterHeroSearchResults()" />
+            <input autocomplete="off" id="herosearchbox" *ngIf="showSearch" type="text" placeholder="Search for a hero" [(ngModel)]="searchText" (click)="onClickSearchBox()" (input)="filterHeroSearchResults()" />
             <div clickAway [parentId]="'herosearch'" (onClickAway)="closeResults()" *ngIf="showSearch && showResults" class="search-results">
                 <ng-container *ngFor="let item of filteredHeroSearchList">
                     <app-hero-search-item [hero]="item" (heroSelect)="onSelectHero($event)"></app-hero-search-item>

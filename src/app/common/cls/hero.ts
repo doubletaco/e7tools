@@ -1,5 +1,6 @@
 export class Hero {
     id: String = '';
+    gameId?: string = '';
     name: String = '';
     element: IIconInfo = null;
     class: IIconInfo = null;

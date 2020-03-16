@@ -73,7 +73,7 @@ export class GearGoalsComponent implements OnInit {
     let now = new Date();
     let cache = localStorage.getItem('hero-list-data-cache-ts');
     // Hack since TypeScript won't let you let browsers handle storing Date objects in localstorage
-    if ((Date.parse(now.toString()) - Date.parse(cache)) > (60 * 6000)) {
+    if (cache == null || (Date.parse(now.toString()) - Date.parse(cache)) > (60 * 6000)) {
       // Fetch the data again if the cache has expired.
       this._heroDataService.GetHeroList().subscribe((data) => {
         console.log('fetching');
@@ -97,13 +97,14 @@ export class GearGoalsComponent implements OnInit {
   }
 
   onSelectHero(data:IHeroListItem) {
-    this.showSearch = false;
-    this.searchText = data.name;
-    this.activeHero = this._heroDataService.GetHeroWithStats(data.apiId);
-    this.maxLevel = this.activeHero.baseStats[0].level;
-    this.initStats();
-    this.heroImage = 'assets/hero/' + this.activeHero.id + '/model.png';
-    this.activeHero.name = 'Charlotte';
+    this._heroDataService.GetHeroWithStats(data.apiId).subscribe((hero) => {
+      this.activeHero = hero;
+      this.showSearch = false;
+      this.searchText = data.name;
+      this.maxLevel = this.activeHero.baseStats[0].level;
+      this.initStats();
+      this.heroImage = 'assets/hero/' + this.activeHero.id + '/model.png';
+    })
   }
 
   initStats() {

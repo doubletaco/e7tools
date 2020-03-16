@@ -37,5 +37,6 @@ export enum E7DB_API_ENDPOINTS {
     GET_HERO_LIST = "https://api.epicsevendb.com/hero",
     GET_HERO = "https://api.epicsevendb.com/hero/{0}",
     GET_ARTIFACT_LIST = 'https://api.epicsevendb.com/artifact',
-    GET_ARTIFACT = 'https://api.epicsevendb.com/artifact/{0}'
+    GET_ARTIFACT = 'https://api.epicsevendb.com/artifact/{0}',
+    V1_GET_HERO_DATA = 'https://epicsevendb-apiserver.herokuapp.com/api/hero/'
 }
