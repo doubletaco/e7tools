@@ -194,10 +194,30 @@ export class GearGoalsComponent implements OnInit {
   }
 
   canDisplayOption(index, set): boolean {
-    if (this.selectedGearSets[index] == set.id)
+    let fourSlotSets = [GEAR_SETS.ATTACK_SET,
+                        "" + GEAR_SETS.ATTACK_SET,
+                        GEAR_SETS.SPEED_SET,
+                        "" + GEAR_SETS.SPEED_SET,
+                        GEAR_SETS.DESTRUCTION_SET,
+                        "" + GEAR_SETS.DESTRUCTION_SET,
+                        GEAR_SETS.COUNTER_SET,
+                        "" + GEAR_SETS.COUNTER_SET];
+    
+    let newSlotsAvailable = this.maxGearSlots - (this.usedGearSlots + set.slots);
+    let s = this.selectedGearSets[index];
+    
+    if (set.id == GEAR_SETS.NO_SET)
       return true;
-    else if ((this.usedGearSlots + set.slots) > this.maxGearSlots)
+    if (this.usedGearSlots == this.maxGearSlots && s == GEAR_SETS.NO_SET)
       return false;
+    if (newSlotsAvailable > -1)
+      return true;
+    if (newSlotsAvailable <= 0) {
+      if (s == set.id) return true;
+      else if (fourSlotSets.indexOf(s) > -1) return true;
+      else if (!(fourSlotSets.indexOf(s) > -1) && set.slots == 2) return true;
+      else return false;
+    }
     return true;
   }
 
