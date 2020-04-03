@@ -220,7 +220,7 @@ export class GearGoalsService {
     {
       id: GEAR_SETS.CRIT_SET,
       name: 'Cricial Set',
-      slots: 4,
+      slots: 2,
       bonus: {
         stat: STAT_MAP.CRITRATE,
         gain: 12
@@ -241,7 +241,7 @@ export class GearGoalsService {
     // Destruction Set - 40%
     {
       id: GEAR_SETS.DESTRUCTION_SET,
-      name: 'Destruction  Set',
+      name: 'Destruction Set',
       slots: 4,
       bonus: {
         stat: STAT_MAP.CRITDMG,

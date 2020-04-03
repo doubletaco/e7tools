@@ -17,7 +17,7 @@ ul {
     opacity: 50%;
 }
 
-@media (min-device-width: 1000px) {
+/* @media (min-device-width: 1000px) { */
     .flex {
         display: flex;
     }
@@ -519,10 +519,21 @@ ul {
         background-repeat: no-repeat;
         background-position: center center;
     }
-}
+
+    .appinfo {
+        margin: auto;
+        font-size: 10pt;
+        text-align: center;
+    }
+
+    .appinfo a {
+        color: #8F7858;
+    }
+/*}*/
 
 /* Mobile: iPhones */
 /* Portrait and Landscape */
+/*
 @media only screen 
   and (min-device-width: 375px) 
   and (max-device-width: 812px) 
@@ -531,3 +542,4 @@ ul {
         background-color: white !important;
     }
 }
+*/

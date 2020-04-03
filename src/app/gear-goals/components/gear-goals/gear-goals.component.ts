@@ -76,7 +76,6 @@ export class GearGoalsComponent implements OnInit {
     if (cache == null || (Date.parse(now.toString()) - Date.parse(cache)) > (60 * 6000)) {
       // Fetch the data again if the cache has expired.
       this._heroDataService.GetHeroList().subscribe((data) => {
-        console.log('fetching');
         this.heroSearchList = data
         let cacheTs = new Date();
         localStorage.setItem('hero-list-data', JSON.stringify(data));
@@ -85,7 +84,6 @@ export class GearGoalsComponent implements OnInit {
     }
     else { // Use our client-side cached hero list.
       this.heroSearchList = JSON.parse(localStorage.getItem("hero-list-data"))
-      console.log('cached');
     }
 
     // Get Gear Sets and init the gear set selection boxes to No Set
@@ -260,7 +258,6 @@ export class GearGoalsComponent implements OnInit {
               targetStatPercent = 0;
           }
         }
-        console.log('calculated stat: ' + baseStat.id + ' || percentage: ' + targetStatPercent)
         this.subStats[i] = { stat: baseStat.id, value: targetStatPercent };
         this.checkedGearSlots[i] = [];
         for (let z = 0; z < 6; z++)
@@ -304,7 +301,7 @@ export class GearGoalsComponent implements OnInit {
   }
 
   debugFunc() {
-    console.log('hi');
+    
   }
 
   getSubStatAnalysis(sub:ISubStat, statindex:number) {

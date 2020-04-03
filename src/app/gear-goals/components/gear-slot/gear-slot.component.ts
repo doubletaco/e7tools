@@ -27,7 +27,6 @@ export class GearSlotComponent implements OnInit {
 
   ngOnInit(): void {
     this.mainStats = this._gearGoalsService.getMainStatOptions(this.slot);
-    console.log(this.slot);
     if (this.slot > 3 && this.slot < 7)
       this.selectDisabled = false;
     else

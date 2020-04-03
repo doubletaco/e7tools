@@ -142,92 +142,6 @@ export class HeroDataService {
     throw "Not Implemented"
   }
 
-  /*
-  v1BuildHeroObject(obj:Object) {
-    let ret:Hero = new Hero();
-
-    ret.id = obj['_id'];
-    ret.gameId = obj['gameId'];
-    ret.name = obj['name'];
-    ret.class = { id: this.mapRole[obj['classType']], text: obj['classType'] };
-    ret.element = { id: this.mapAttribute[obj['element']], text: obj['element'] };
-    ret.sign = { id: this.mapZodiac[obj['zodiac']], text: obj['zodiac'] }
-    ret.rarity = obj['rarity'];
-
-    // Stat Mapping
-    {
-      // The API returns fully awakened stats, but since we calculate that here, there's no need to keep that data
-      let baseStatsKeys:Array<String> = [
-        'lv30ThreeStarNoAwaken',
-        'lv40FourStarNoAwaken',
-        'lv50FiveStarNoAwaken',
-        'lv60SixStarNoAwaken'
-      ];
-      let flatstats:Array<number> = [STAT_MAP.ATTACK, STAT_MAP.DEFENSE, STAT_MAP.HEALTH, STAT_MAP.SPEED];
-      let statsNode = obj['stats'];
-      for (let i = 0; i < baseStatsKeys.length; i++) {
-        let itm = statsNode[baseStatsKeys[i]];
-        if (itm == null) continue; // Skip stat sets that don't exist (e.g. 3 star stats for a nat 5)
-        let lvl:number;
-        switch(i) {
-          case 0: lvl = 30; break;
-          case 1: lvl = 40; break;
-          case 2: lvl = 50; break;
-          case 3: lvl = 60; break;
-          default: return null; // Shouldn't ever happen
-        }
-        let lvlStats:Array<IHeroStatValue> = [];
-        for (let key in itm) {
-          if (true) {
-            if (key == 'cp') continue // Don't care about this stat
-
-            lvlStats.push({
-              id: this.v1_mapStats[key].id,
-              text: this.v1_mapStats[key].text,
-              value: ((itm[key] < 2 && itm[key] > 0) ? (itm[key] * 100) : itm[key]),
-              type: ((flatstats.indexOf(this.v1_mapStats[key].id) > -1) ? 1 : 2)
-            });
-          }
-        }
-        // My IDs are the order in which they're displayed on the hero box screen
-        lvlStats.sort((a, b) => {
-          if (a.id < b.id) return -1;
-          else if (b.id < a.id) return 1;
-          else return 0;
-        });
-
-        ret.baseStats.push({
-          level: lvl,
-          stats: lvlStats
-        });
-        // outside key loop
-      }
-    }
-
-    // Awakenings
-    {
-      let awakeningNode = obj['awakening'];
-      for (let i = 0; i < awakeningNode.length; i++) {
-        let statId:number = 0;
-        let statValue:number = 0;
-        for (let j = 0; j < awakeningNode[i]['statsIncrease'].length; j++) {
-          for (let key in awakeningNode[i]['statsIncrease'][j]) {
-            if (awakeningNode[i]['statsIncrease'][j][key] >= 20) continue;
-            statId = this.v1_mapStats[key].id;
-            statValue = ((awakeningNode[i]['statsIncrease'][j][key] < 1 && awakeningNode[i]['statsIncrease'][j][key] > 0) ? awakeningNode[i]['statsIncrease'][j][key] * 100 : awakeningNode[i]['statsIncrease'][j][key]);
-          }
-        }
-        ret.awakenings.push({
-          level: (awakeningNode[i]['rank'] * 10),
-          stat: statId,
-          effect: statValue
-        })
-      }
-      return ret;
-    }
-  }
-  */
-
   buildHeroObject(obj:Object) {
     let ret:Hero = new Hero();
 
@@ -300,8 +214,6 @@ export class HeroDataService {
         nodeLevel = ((parseInt(awakeningNode[i]['_id'].charAt(awakeningNode[i]['_id'].length - 1)) + 1) * 10);
 
         if (i != 2) {
-          let statNode = awakeningNode[i]['stats'][0];
-          debugger;
           statId = this.mapAwakeningStats[awakeningNode[i]['stats'][0]['stat']].id;
           statValue = awakeningNode[i]['stats'][0]['value'];
           statValue = (statValue > 0 && statValue < 1 ? statValue * 100 : statValue);
