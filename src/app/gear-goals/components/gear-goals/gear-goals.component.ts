@@ -102,6 +102,7 @@ export class GearGoalsComponent implements OnInit {
       this.maxLevel = this.activeHero.baseStats[0].level;
       this.initStats();
       this.heroImage = 'assets/hero/' + this.activeHero.id + '/model.png';
+      this.recalculateSubstats();
     })
   }
 

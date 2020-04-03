@@ -336,6 +336,16 @@ ul {
         color: #ADA39F;
     }
 
+    h3.analysis-subsection {
+        margin-block-end: 3px;
+    }
+
+    .instructions {
+        color: #ADA39F;
+        font-size: 0.75rem;
+
+    }
+
     /* Stat Icons */
     .attack-flat, .stat-1, .gear-stat-1 {
         background-image: url("../../../../assets/ui/stat-icons/1.png");
@@ -514,7 +524,7 @@ ul {
         background-position: center center;
     }
 
-    label.substat-slot input:disabled ~ .slot-2 {
+    label.substat-slot input:disabled ~ .slot-6 {
         background-image: url("../../../../assets/ui/equip-icons/6_invalid.png");
         background-repeat: no-repeat;
         background-position: center center;
@@ -527,7 +537,7 @@ ul {
     }
 
     .appinfo a {
-        color: #8F7858;
+        color: #FDC53F;
     }
 /*}*/
 
