@@ -10,7 +10,7 @@ export class Hero {
     awakenings: Array<IAwakening> = [];
 }
 
-interface IIconInfo {
+export interface IIconInfo {
     id: number;
     text: String;
 }
